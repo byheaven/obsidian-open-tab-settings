@@ -7,11 +7,11 @@ assignees: ''
 
 ---
 
-**Describe the bug**
+# Describe the bug
 A clear and concise description of what the bug is.
 
-**To Reproduce**
+# Steps To Reproduce
 Steps to reproduce the behavior.
 
-**Plugin Settings**
+# Plugin Settings
 Please include a screenshot of the "Open Tab Settings" setting page to help with reproducing your issue.
