@@ -5,7 +5,7 @@ import {
 import * as monkeyAround from 'monkey-around';
 import {
     OpenTabSettingsPluginSettingTab, OpenTabSettingsPluginSettings, DEFAULT_SETTINGS, NEW_TAB_TAB_GROUP_PLACEMENTS,
-    isDisabledOnDevice,
+    DISABLED_KEY,
 } from './settings';
 import { TabGroup } from './types';
 import { initializeI18n } from './i18n';
@@ -70,7 +70,7 @@ export default class OpenTabSettingsPlugin extends Plugin {
 
         this.addSettingTab(new OpenTabSettingsPluginSettingTab(this.app, this));
 
-        if (isDisabledOnDevice()) {
+        if (this.app.loadLocalStorage(DISABLED_KEY)) {
             return;
         }
 
