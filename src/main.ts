@@ -109,7 +109,7 @@ export default class OpenTabSettingsPlugin extends Plugin {
             });
         }
         this.addCommand({
-            id: `cycle-tab-group-placement`,
+            id: "cycle-tab-group-placement",
             name: t('commands.cycle', {name: t('settings.newTabTabGroupPlacement.name')}),
             callback: async () => {
                 const values = Object.keys(NEW_TAB_TAB_GROUP_PLACEMENTS) as (keyof typeof NEW_TAB_TAB_GROUP_PLACEMENTS)[];
@@ -119,6 +119,17 @@ export default class OpenTabSettingsPlugin extends Plugin {
                 new Notice(`${t('settings.newTabTabGroupPlacement.name')}: ${t(NEW_TAB_TAB_GROUP_PLACEMENTS[newValue])}`, 2500);
             },
         });
+        // workspace:new-tab doesn't respect new tab placement options, so add some custom commands
+        for (const p of ["after-pinned", "after-active", "beginning"] as const) {
+            this.addCommand({
+                id: `new-tab-${p}`,
+                name: t(`commands.newTab.${p.replace(/-\w/g, x => x[1].toUpperCase())}`),
+                callback: async () => {
+                    const leaf = this.app.workspace.getLeaf(buildOverride('tab', {newTabPlacement: p}));
+                    this.app.workspace.setActiveLeaf(leaf);
+                },
+            })
+        }
 
         this.registerEvent(this.app.workspace.on("file-menu", (menu, file, source, leaf) => {
             if (file instanceof TFile) {

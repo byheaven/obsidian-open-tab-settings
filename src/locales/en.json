@@ -5,7 +5,12 @@
     "disable": "Disable {{name}}",
     "cycle": "Cycle {{name}}",
     "enabled": "ON",
-    "disabled": "OFF"
+    "disabled": "OFF",
+    "newTab": {
+      "afterPinned": "Open new tab after pinned tabs",
+      "afterActive": "Open new tab after active tab",
+      "beginning": "Open new tab at beginning"
+    }
   },
   "menu": {
     "openInSameTab": "Open in same tab",
