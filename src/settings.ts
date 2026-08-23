@@ -22,6 +22,9 @@ export const MOD_CLICK_BEHAVIOR = {
     "allow_duplicate": 'settings.modClickBehavior.options.allow_duplicate',
     "opposite": 'settings.modClickBehavior.options.opposite',
     "no_preview": 'settings.modClickBehavior.options.no_preview',
+    "place_after_active": 'settings.modClickBehavior.options.place_after_active',
+    "place_at_end": 'settings.modClickBehavior.options.place_at_end',
+    "place_at_beginning": 'settings.modClickBehavior.options.place_at_beginning',
 }
 
 export interface OpenTabSettingsPluginSettings {
@@ -70,12 +73,15 @@ export class OpenTabSettingsPluginSettingTab extends PluginSettingTab {
 
     getSettingDefinitions(): SettingDefinitionItem<keyof OpenTabSettingsPluginSettings>[] {
         const settings = this.plugin.settings;
-        const modClickOptions: Partial<typeof MOD_CLICK_BEHAVIOR> = {};
-        modClickOptions['tab'] = MOD_CLICK_BEHAVIOR['tab'];
-        if (settings.openInNewTab) modClickOptions['same'] = MOD_CLICK_BEHAVIOR['same'];
-        if (settings.deduplicateTabs) modClickOptions['allow_duplicate'] = MOD_CLICK_BEHAVIOR['allow_duplicate'];
-        modClickOptions['opposite'] = MOD_CLICK_BEHAVIOR['opposite'];
-        if (settings.previewTabs) modClickOptions['no_preview'] = MOD_CLICK_BEHAVIOR['no_preview'];
+        const modClickOptions: (keyof typeof MOD_CLICK_BEHAVIOR)[] = [];
+        modClickOptions.push('tab');
+        if (settings.openInNewTab) modClickOptions.push('same');
+        if (settings.deduplicateTabs) modClickOptions.push('allow_duplicate');
+        modClickOptions.push('opposite');
+        if (settings.previewTabs) modClickOptions.push('no_preview');
+        if (settings.newTabPlacement != "after-active") modClickOptions.push('place_after_active');
+        if (settings.newTabPlacement != "beginning") modClickOptions.push('place_at_beginning');
+        if (settings.newTabPlacement != "end") modClickOptions.push('place_at_end');
 
         return [
             {
@@ -143,7 +149,7 @@ export class OpenTabSettingsPluginSettingTab extends PluginSettingTab {
                 control: {
                     type: 'dropdown',
                     key: 'modClickBehavior',
-                    options: translateOptions(modClickOptions),
+                    options: translateOptions(Object.fromEntries(modClickOptions.map(k => [k, MOD_CLICK_BEHAVIOR[k]]))),
                 },
             }, {
                 name: t('settings.disableOnDevice.name'),

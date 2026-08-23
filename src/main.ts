@@ -58,6 +58,9 @@ const OVERRIDES = {
     allow_duplicate: buildOverride(false, {deduplicateTabs: false}),
     opposite: buildOverride("tab", {newTabTabGroupPlacement: "opposite"}),
     no_preview: buildOverride("tab", {previewTabs: false}),
+    place_after_active: buildOverride('tab', {newTabPlacement: "after-active"}),
+    place_at_beginning: buildOverride('tab', {newTabPlacement: "beginning"}),
+    place_at_end: buildOverride('tab', {newTabPlacement: "end"}),
 }
 
 export default class OpenTabSettingsPlugin extends Plugin {
@@ -364,7 +367,10 @@ export default class OpenTabSettingsPlugin extends Plugin {
         if (
             (settings.modClickBehavior == 'same' && !settings.openInNewTab) ||
             (settings.modClickBehavior == 'no_preview' && !settings.previewTabs) ||
-            (settings.modClickBehavior == 'allow_duplicate' && !settings.deduplicateTabs)
+            (settings.modClickBehavior == 'allow_duplicate' && !settings.deduplicateTabs) ||
+            (settings.modClickBehavior == "place_after_active" && settings.newTabPlacement == "after-active") ||
+            (settings.modClickBehavior == "place_at_beginning" && settings.newTabPlacement == "beginning") ||
+            (settings.modClickBehavior == "place_at_end" && settings.newTabPlacement == "end")
         ) {
             if (newSettings.modClickBehavior) throw Error(`Invalid settings: ${JSON.stringify(newSettings)}`)
             settings.modClickBehavior = 'tab'

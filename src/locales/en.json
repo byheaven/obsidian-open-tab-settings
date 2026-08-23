@@ -38,7 +38,10 @@
         "no_preview": "Open persistent (non-preview) tab",
         "opposite": "In opposite tab group",
         "same": "In same tab",
-        "tab": "In new tab"
+        "tab": "In new tab",
+        "place_after_active": "After active tabs",
+        "place_at_beginning": "At beginning",
+        "place_at_end": "At end"
       }
     },
     "newTabPlacement": {
