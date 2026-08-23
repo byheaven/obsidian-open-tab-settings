@@ -40,6 +40,11 @@ function buildOverride(mode: PaneType|false, settings: Partial<OpenTabSettingsPl
     return `${mode || ""}:${JSON.stringify(settings)}` as PaneType; // Deceptive cast to allow passing to getLeaf
 }
 
+
+function camelCase(s: string) { return s.replace(/[-_]\w/g, x => x[1].toUpperCase()); }
+function kebabCase(s: string) { return s.replace(/[A-Z]/g, x => `-${x.toLowerCase()}`); }
+
+
 function parseOverride(override?: string|boolean): [PaneType|false, Partial<OpenTabSettingsPluginSettings>] {
     if (!override) {
         return [false, {}];
@@ -55,12 +60,12 @@ function parseOverride(override?: string|boolean): [PaneType|false, Partial<Open
 const OVERRIDES = {
     tab: "tab",
     same: buildOverride(false, {openInNewTab: false}),
-    allow_duplicate: buildOverride(false, {deduplicateTabs: false}),
+    allowDuplicate: buildOverride(false, {deduplicateTabs: false}),
     opposite: buildOverride("tab", {newTabTabGroupPlacement: "opposite"}),
-    no_preview: buildOverride("tab", {previewTabs: false}),
-    place_after_active: buildOverride('tab', {newTabPlacement: "after-active"}),
-    place_at_beginning: buildOverride('tab', {newTabPlacement: "beginning"}),
-    place_at_end: buildOverride('tab', {newTabPlacement: "end"}),
+    noPreview: buildOverride("tab", {previewTabs: false}),
+    placeAfterActive: buildOverride('tab', {newTabPlacement: "afterActive"}),
+    placeAtBeginning: buildOverride('tab', {newTabPlacement: "beginning"}),
+    placeAtEnd: buildOverride('tab', {newTabPlacement: "end"}),
 }
 
 export default class OpenTabSettingsPlugin extends Plugin {
@@ -84,24 +89,22 @@ export default class OpenTabSettingsPlugin extends Plugin {
             ["deduplicateTabs", t('settings.deduplicateTabs.name')],
         ] as const;
         for (const [setting, name] of commands) {
-            const id = setting.replace(/[A-Z]/g, l => `-${l.toLowerCase()}`);
-
             this.addCommand({
-                id: `toggle-${id}`, name: t('commands.toggle', { name }),
+                id: `toggle-${kebabCase(setting)}`, name: t('commands.toggle', { name }),
                 callback: async () => {
                     await this.updateSettings({[setting]: !this.settings[setting]});
                     new Notice(`${name}: ` + t(`commands.${this.settings[setting] ? 'enabled' : 'disabled'}`), 2500);
                 },
             });
             this.addCommand({
-                id: `enable-${id}`, name: t('commands.enable', { name }),
+                id: `enable-${kebabCase(setting)}`, name: t('commands.enable', { name }),
                 callback: async () => {
                     await this.updateSettings({[setting]: true});
                     new Notice(`${name}: ` + t(`commands.${this.settings[setting] ? 'enabled' : 'disabled'}`), 2500);
                 },
             });
             this.addCommand({
-                id: `disable-${id}`, name: t('commands.disable', { name }),
+                id: `disable-${kebabCase(setting)}`, name: t('commands.disable', { name }),
                 callback: async () => {
                     await this.updateSettings({[setting]: false});
                     new Notice(`${name}: ` + t(`commands.${this.settings[setting] ? 'enabled' : 'disabled'}`), 2500);
@@ -120,10 +123,10 @@ export default class OpenTabSettingsPlugin extends Plugin {
             },
         });
         // workspace:new-tab doesn't respect new tab placement options, so add some custom commands
-        for (const p of ["after-pinned", "after-active", "beginning"] as const) {
+        for (const p of ["afterPinned", "afterActive", "beginning"] as const) {
             this.addCommand({
-                id: `new-tab-${p}`,
-                name: t(`commands.newTab.${p.replace(/-\w/g, x => x[1].toUpperCase())}`),
+                id: "new-tab-" + kebabCase(p),
+                name: t(`commands.newTab.${p}`),
                 callback: async () => {
                     const leaf = this.app.workspace.getLeaf(buildOverride('tab', {newTabPlacement: p}));
                     this.app.workspace.setActiveLeaf(leaf);
@@ -149,7 +152,7 @@ export default class OpenTabSettingsPlugin extends Plugin {
                         item.setIcon("files")
                         item.setTitle(t('menu.openInDuplicateTab'));
                         item.onClick(async () => {
-                            await this.app.workspace.getLeaf(OVERRIDES.allow_duplicate).openFile(file);
+                            await this.app.workspace.getLeaf(OVERRIDES.allowDuplicate).openFile(file);
                         });
                     });
                 }
@@ -356,13 +359,20 @@ export default class OpenTabSettingsPlugin extends Plugin {
     }
 
     async loadSettings() {
-        const dataFile = await this.loadData() as object ?? {};
-        this.settings = Object.assign({}, DEFAULT_SETTINGS, dataFile);
+        const data = await this.loadData() as Record<string, unknown> ?? {};
+        const originalData = JSON.stringify(data);
+        for (const k of ['newTabPlacement', 'modClickBehavior']) { // backwards compatibility for before camelCase values
+            if (k in data) data[k] = camelCase(data[k] as string);
+        }
+        this.settings = Object.assign({}, DEFAULT_SETTINGS, data);
 
-        if (Object.keys(dataFile).length == 0) {
+        if (Object.keys(data).length == 0) {
             // when using this plugin, focusNewTab should default to false. Set it if this is the first time we've
             // loaded the plugin.
             this.app.vault.setConfig('focusNewTab', false);
+        }
+    
+        if (JSON.stringify(this.settings) != originalData) {
             await this.updateSettings({});
         }
     }
@@ -377,11 +387,11 @@ export default class OpenTabSettingsPlugin extends Plugin {
 
         if (
             (settings.modClickBehavior == 'same' && !settings.openInNewTab) ||
-            (settings.modClickBehavior == 'no_preview' && !settings.previewTabs) ||
-            (settings.modClickBehavior == 'allow_duplicate' && !settings.deduplicateTabs) ||
-            (settings.modClickBehavior == "place_after_active" && settings.newTabPlacement == "after-active") ||
-            (settings.modClickBehavior == "place_at_beginning" && settings.newTabPlacement == "beginning") ||
-            (settings.modClickBehavior == "place_at_end" && settings.newTabPlacement == "end")
+            (settings.modClickBehavior == 'noPreview' && !settings.previewTabs) ||
+            (settings.modClickBehavior == 'allowDuplicate' && !settings.deduplicateTabs) ||
+            (settings.modClickBehavior == "placeAfterActive" && settings.newTabPlacement == "afterActive") ||
+            (settings.modClickBehavior == "placeAtBeginning" && settings.newTabPlacement == "beginning") ||
+            (settings.modClickBehavior == "placeAtEnd" && settings.newTabPlacement == "end")
         ) {
             if (newSettings.modClickBehavior) throw Error(`Invalid settings: ${JSON.stringify(newSettings)}`)
             settings.modClickBehavior = 'tab'
@@ -485,7 +495,7 @@ export default class OpenTabSettingsPlugin extends Plugin {
         }
 
         if (group == activeTabGroup) {
-            if (settings.newTabPlacement == "after-pinned") {
+            if (settings.newTabPlacement == "afterPinned") {
                 const lastPinnedIndex = group.children.findLastIndex(l => l.pinned);
                 index = lastPinnedIndex >= 0 ? lastPinnedIndex + 1 : activeIndex + 1;
             } else if (settings.newTabPlacement == "beginning") {

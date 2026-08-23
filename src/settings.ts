@@ -3,8 +3,8 @@ import OpenTabSettingsPlugin from "./main"
 import { t } from 'i18next';
 
 export const NEW_TAB_PLACEMENTS = {
-    "after-active": 'settings.newTabPlacement.options.after-active',
-    "after-pinned": 'settings.newTabPlacement.options.after-pinned',
+    "afterActive": 'settings.newTabPlacement.options.afterActive',
+    "afterPinned": 'settings.newTabPlacement.options.afterPinned',
     "beginning": 'settings.newTabPlacement.options.beginning',
     "end": 'settings.newTabPlacement.options.end',
 };
@@ -19,12 +19,12 @@ export const NEW_TAB_TAB_GROUP_PLACEMENTS = {
 export const MOD_CLICK_BEHAVIOR = {
     "tab": 'settings.modClickBehavior.options.tab',
     "same": 'settings.modClickBehavior.options.same',
-    "allow_duplicate": 'settings.modClickBehavior.options.allow_duplicate',
+    "allowDuplicate": 'settings.modClickBehavior.options.allowDuplicate',
     "opposite": 'settings.modClickBehavior.options.opposite',
-    "no_preview": 'settings.modClickBehavior.options.no_preview',
-    "place_after_active": 'settings.modClickBehavior.options.place_after_active',
-    "place_at_end": 'settings.modClickBehavior.options.place_at_end',
-    "place_at_beginning": 'settings.modClickBehavior.options.place_at_beginning',
+    "noPreview": 'settings.modClickBehavior.options.noPreview',
+    "placeAfterActive": 'settings.modClickBehavior.options.placeAfterActive',
+    "placeAtEnd": 'settings.modClickBehavior.options.placeAtEnd',
+    "placeAtBeginning": 'settings.modClickBehavior.options.placeAtBeginning',
 }
 
 export interface OpenTabSettingsPluginSettings {
@@ -42,7 +42,7 @@ export const DEFAULT_SETTINGS: OpenTabSettingsPluginSettings = {
     previewTabs: false,
     deduplicateTabs: true,
     deduplicateAcrossTabGroups: true,
-    newTabPlacement: "after-active",
+    newTabPlacement: "afterActive",
     newTabTabGroupPlacement: "same",
     modClickBehavior: "tab",
 }
@@ -76,12 +76,12 @@ export class OpenTabSettingsPluginSettingTab extends PluginSettingTab {
         const modClickOptions: (keyof typeof MOD_CLICK_BEHAVIOR)[] = [];
         modClickOptions.push('tab');
         if (settings.openInNewTab) modClickOptions.push('same');
-        if (settings.deduplicateTabs) modClickOptions.push('allow_duplicate');
+        if (settings.deduplicateTabs) modClickOptions.push('allowDuplicate');
         modClickOptions.push('opposite');
-        if (settings.previewTabs) modClickOptions.push('no_preview');
-        if (settings.newTabPlacement != "after-active") modClickOptions.push('place_after_active');
-        if (settings.newTabPlacement != "beginning") modClickOptions.push('place_at_beginning');
-        if (settings.newTabPlacement != "end") modClickOptions.push('place_at_end');
+        if (settings.previewTabs) modClickOptions.push('noPreview');
+        if (settings.newTabPlacement != "afterActive") modClickOptions.push('placeAfterActive');
+        if (settings.newTabPlacement != "beginning") modClickOptions.push('placeAtBeginning');
+        if (settings.newTabPlacement != "end") modClickOptions.push('placeAtEnd');
 
         return [
             {

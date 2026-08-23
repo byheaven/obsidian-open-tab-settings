@@ -11,7 +11,7 @@ describe("Mod click", function() {
         await workspacePage.setSettings({
             openInNewTab: true, previewTabs: false,
             deduplicateTabs: true, deduplicateAcrossTabGroups: true,
-            newTabPlacement: "after-active", newTabTabGroupPlacement: "same",
+            newTabPlacement: "afterActive", newTabTabGroupPlacement: "same",
             modClickBehavior: "tab",
         });
         await workspacePage.setConfig("focusNewTab", true);
@@ -47,8 +47,8 @@ describe("Mod click", function() {
         ]]);
     });
 
-    it('Test mod click allow_duplicate', async function() {
-        await workspacePage.setSettings({ deduplicateTabs: true, modClickBehavior: "allow_duplicate" });
+    it('Test mod click allowDuplicate', async function() {
+        await workspacePage.setSettings({ deduplicateTabs: true, modClickBehavior: "allowDuplicate" });
 
         await workspacePage.openFile("B.md");
         await workspacePage.openFile("A.md");
@@ -77,10 +77,10 @@ describe("Mod click", function() {
         ]);
     })
 
-    it("mod click no_preview", async function() {
+    it("mod click noPreview", async function() {
         await workspacePage.setSettings({ openInNewTab: true, previewTabs: true, deduplicateTabs: false });
 
-        await workspacePage.setSettings({ modClickBehavior: "no_preview" });
+        await workspacePage.setSettings({ modClickBehavior: "noPreview" });
         await workspacePage.openFile("A.md");
         await (await workspacePage.getLink("B")).click({"button": "middle"});
         await workspacePage.matchWorkspace([[
@@ -89,8 +89,8 @@ describe("Mod click", function() {
         ]]);
     })
 
-    it("mod click place_after_active", async function() {
-        await workspacePage.setSettings({ newTabPlacement: "end", modClickBehavior: "place_after_active" });
+    it("mod click placeAfterActive", async function() {
+        await workspacePage.setSettings({ newTabPlacement: "end", modClickBehavior: "placeAfterActive" });
         await workspacePage.openFile("A.md");
         await workspacePage.openFile("D.md");
         await workspacePage.setActiveFile("A.md");
@@ -102,8 +102,8 @@ describe("Mod click", function() {
         ]]);
     })
 
-    it("mod click place_at_beginning", async function() {
-        await workspacePage.setSettings({ newTabPlacement: "after-active", modClickBehavior: "place_at_beginning" });
+    it("mod click placeAtBeginning", async function() {
+        await workspacePage.setSettings({ newTabPlacement: "afterActive", modClickBehavior: "placeAtBeginning" });
         await workspacePage.openFile("A.md");
         await workspacePage.openFile("D.md");
         await workspacePage.setActiveFile("A.md");
@@ -115,8 +115,8 @@ describe("Mod click", function() {
         ]]);
     })
 
-    it("mod click place_at_end", async function() {
-        await workspacePage.setSettings({ newTabPlacement: "after-active", modClickBehavior: "place_at_end" });
+    it("mod click placeAtEnd", async function() {
+        await workspacePage.setSettings({ newTabPlacement: "afterActive", modClickBehavior: "placeAtEnd" });
         await workspacePage.openFile("A.md");
         await workspacePage.openFile("D.md");
         await workspacePage.setActiveFile("A.md");
