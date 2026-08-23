@@ -5,7 +5,12 @@
     "disable": "Disable {{name}}",
     "cycle": "Cycle {{name}}",
     "enabled": "ON",
-    "disabled": "OFF"
+    "disabled": "OFF",
+    "newTab": {
+      "afterPinned": "Open new tab after pinned tabs",
+      "afterActive": "Open new tab after active tab",
+      "beginning": "Open new tab at beginning"
+    }
   },
   "menu": {
     "openInSameTab": "Open in same tab",
@@ -34,19 +39,22 @@
       "name": "Mod click behavior",
       "description": "On ctrl/cmd/middle click open links...",
       "options": {
-        "allow_duplicate": "In duplicate tab",
-        "no_preview": "Open persistent (non-preview) tab",
+        "allowDuplicate": "In duplicate tab",
+        "noPreview": "Open persistent (non-preview) tab",
         "opposite": "In opposite tab group",
         "same": "In same tab",
-        "tab": "In new tab"
+        "tab": "In new tab",
+        "placeAfterActive": "After active tabs",
+        "placeAtBeginning": "At beginning",
+        "placeAtEnd": "At end"
       }
     },
     "newTabPlacement": {
       "name": "New tab placement",
       "description": "Place new tabs...",
       "options": {
-        "after-active": "After active tab",
-        "after-pinned": "After pinned tabs",
+        "afterActive": "After active tab",
+        "afterPinned": "After pinned tabs",
         "beginning": "At beginning",
         "end": "At end"
       }

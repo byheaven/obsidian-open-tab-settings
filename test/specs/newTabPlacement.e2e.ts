@@ -8,7 +8,7 @@ describe('Test newTabPlacement', function() {
         await workspacePage.loadPlatformWorkspaceLayout("empty");
         await workspacePage.setSettings({
             openInNewTab: false, deduplicateTabs: false,
-            newTabPlacement: "after-active", newTabTabGroupPlacement: "same",
+            newTabPlacement: "afterActive", newTabTabGroupPlacement: "same",
         });
         await workspacePage.setConfig('focusNewTab', false);
     })
@@ -55,8 +55,8 @@ describe('Test newTabPlacement', function() {
         ]]);
     })
 
-    it('basic newTabPlacement after-pinned [unpinned]-unpinned', async function() {
-        await workspacePage.setSettings({newTabPlacement: "after-pinned"});
+    it('basic newTabPlacement afterPinned [unpinned]-unpinned', async function() {
+        await workspacePage.setSettings({newTabPlacement: "afterPinned"});
 
         await workspacePage.openFile("A.md");
         await workspacePage.openFile("D.md");
@@ -70,8 +70,8 @@ describe('Test newTabPlacement', function() {
         ]]);
     })
 
-    it('basic newTabPlacement after-pinned [unpinned]-pinned', async function() {
-        await workspacePage.setSettings({newTabPlacement: "after-pinned"});
+    it('basic newTabPlacement afterPinned [unpinned]-pinned', async function() {
+        await workspacePage.setSettings({newTabPlacement: "afterPinned"});
 
         await workspacePage.openFile("A.md");
         await workspacePage.openFile("D.md");
@@ -86,8 +86,8 @@ describe('Test newTabPlacement', function() {
         ]]);
     })
 
-    it('basic newTabPlacement after-pinned [pinned]-unpinned', async function() {
-        await workspacePage.setSettings({newTabPlacement: "after-pinned"});
+    it('basic newTabPlacement afterPinned [pinned]-unpinned', async function() {
+        await workspacePage.setSettings({newTabPlacement: "afterPinned"});
 
         await workspacePage.openFile("A.md");
         await workspacePage.pinTab("A.md");
@@ -102,8 +102,8 @@ describe('Test newTabPlacement', function() {
         ]]);
     })
 
-    it('basic newTabPlacement after-pinned [pinned]-pinned', async function() {
-        await workspacePage.setSettings({newTabPlacement: "after-pinned"});
+    it('basic newTabPlacement afterPinned [pinned]-pinned', async function() {
+        await workspacePage.setSettings({newTabPlacement: "afterPinned"});
 
         await workspacePage.openFile("A.md");
         await workspacePage.pinTab("A.md");
@@ -119,8 +119,8 @@ describe('Test newTabPlacement', function() {
         ]]);
     })
 
-    it('basic newTabPlacement after-pinned [pinned]-pinned-unpinned', async function() {
-        await workspacePage.setSettings({newTabPlacement: "after-pinned"});
+    it('basic newTabPlacement afterPinned [pinned]-pinned-unpinned', async function() {
+        await workspacePage.setSettings({newTabPlacement: "afterPinned"});
 
         await workspacePage.openFile("A.md");
         await workspacePage.pinTab("A.md");
@@ -161,7 +161,7 @@ describe('Test newTabPlacement', function() {
     })
 
     it('replaces next tab empty tab', async function() {
-        await workspacePage.setSettings({newTabPlacement: "after-active"});
+        await workspacePage.setSettings({newTabPlacement: "afterActive"});
 
         await workspacePage.openFile("A.md");
         await browser.executeObsidianCommand("workspace:new-tab");
@@ -327,7 +327,7 @@ describe('Test newTabTabGroupPlacement', function() {
         await workspacePage.loadPlatformWorkspaceLayout("empty");
         await workspacePage.setSettings({
             openInNewTab: false, deduplicateTabs: false,
-            newTabPlacement: "after-active", newTabTabGroupPlacement: "opposite",
+            newTabPlacement: "afterActive", newTabTabGroupPlacement: "opposite",
         });
         await workspacePage.setConfig('focusNewTab', false);
     })

@@ -24,9 +24,9 @@ jobs:
       run:
         shell: bash
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: "24.x"
           cache: 'npm'
@@ -54,7 +54,7 @@ jobs:
           OBSIDIAN_PASSWORD: ${{ secrets.OBSIDIAN_PASSWORD }}
 
       - name: Cache Obsidian
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: .obsidian-cache
           key: obsidian-cache-${{ matrix.os }}-${{ hashFiles('obsidian-versions-lock.txt') }}
@@ -110,9 +110,9 @@ jobs:
   #     run:
   #       shell: bash
   #   steps:
-  #     - uses: actions/checkout@v4
+  #     - uses: actions/checkout@v7
   #     - name: Use Node.js
-  #       uses: actions/setup-node@v4
+  #       uses: actions/setup-node@v7
   #       with:
   #         node-version: 24.x
   #         cache: 'npm'
@@ -130,7 +130,7 @@ jobs:
   #         OBSIDIAN_PASSWORD: ${{ secrets.OBSIDIAN_PASSWORD }}
 
   #     - name: Cache .obsidian-cache
-  #       uses: actions/cache@v4
+  #       uses: actions/cache@v6
   #       with:
   #         path: .obsidian-cache
   #         key: obsidian-cache-android-${{ hashFiles('obsidian-versions-lock.txt') }}
@@ -143,7 +143,7 @@ jobs:
   
   #     - name: AVD cache
   #       id: avd-cache
-  #       uses: actions/cache@v4
+  #       uses: actions/cache@v6
   #       with:
   #         path: |
   #           ~/.android/avd/*
