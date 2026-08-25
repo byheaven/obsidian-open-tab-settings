@@ -474,42 +474,40 @@ export default class OpenTabSettingsPlugin extends Plugin {
 
         const activeLeaf = workspace.getMostRecentLeaf();
         if (!activeLeaf) throw new Error("No tab group found.");
+        const root = activeLeaf.getRoot();
         const activeTabGroup = activeLeaf.parent;
-        const activeIndex = activeTabGroup.children.indexOf(activeLeaf);
         let group: TabGroup|undefined;
         let index: number|undefined;
 
-        if (settings.newTabTabGroupPlacement != "same" && !Platform.isPhone) {
-            const tabGroups = this.getAllTabGroups(activeLeaf.getRoot());
-            const otherTabGroup = tabGroups.filter(g => g !== activeTabGroup).at(-1);
-            if (settings.newTabTabGroupPlacement == "opposite" && otherTabGroup) {
-                group = otherTabGroup;
-            } else if (settings.newTabTabGroupPlacement == "first" && tabGroups.at(0)) {
-                group = tabGroups[0];
-            } else if (settings.newTabTabGroupPlacement == "last" && tabGroups.at(-1)) {
-                group = tabGroups.at(-1)!;
-            }
-        }
-        if (!group) {
+        if (settings.newTabTabGroupPlacement == "same" || Platform.isPhone) {
             group = activeTabGroup;
+        } else {
+            const tabGroups = this.getAllTabGroups(root);
+            if (settings.newTabTabGroupPlacement == "opposite") {
+                group = tabGroups.filter(g => g !== activeTabGroup).at(-1) ?? activeTabGroup;
+            } else if (settings.newTabTabGroupPlacement == "first") {
+                group = tabGroups.at(0) ?? activeTabGroup;
+            } else  { // if (settings.newTabTabGroupPlacement == "last") {
+                group = tabGroups.at(-1) ?? activeTabGroup;
+            }
         }
 
         if (group == activeTabGroup) {
             if (settings.newTabPlacement == "afterPinned") {
                 const lastPinnedIndex = group.children.findLastIndex(l => l.pinned);
-                index = lastPinnedIndex >= 0 ? lastPinnedIndex + 1 : activeIndex + 1;
+                index = lastPinnedIndex >= 0 ? lastPinnedIndex + 1 : group.currentTab + 1;
             } else if (settings.newTabPlacement == "beginning") {
                 index = 0;
             } else if (settings.newTabPlacement == "end") {
-                index = activeTabGroup.children.length;
-            } else {
-                index = activeIndex + 1;
+                index = group.children.length;
+            } else { // if (settings.newTabPlacement == "afterActive") {
+                index = group.currentTab + 1;
             }
         } else {
             if (settings.newTabPlacement == "beginning") {
                 index = 0
             } else {
-                index = activeTabGroup.children.length;
+                index = group.children.length;
             }
         }
 

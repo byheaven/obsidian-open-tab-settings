@@ -492,4 +492,16 @@ describe('Test newTabTabGroupPlacement', function() {
             [{file: "D.md"}, {file: "B.md"}],
         ]);
     })
+
+    it("newTabTabGroupPlacement opposite multiple items", async function() {
+        await workspacePage.setSettings({ newTabTabGroupPlacement: "first" });
+        await workspacePage.loadPlatformWorkspaceLayout("split-multi-tab")
+        await workspacePage.setActiveFile("Loop.md");
+        await workspacePage.openLinkInNewTab(await workspacePage.getLink("B"));
+
+        await workspacePage.matchWorkspace([
+            [{file: "D.md", currentTab: true}, {file: "A.md"}, {file: "B.md"}],
+            [{file: "Loop.md", active: true}],
+        ]);
+    })
 })
