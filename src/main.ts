@@ -127,10 +127,7 @@ export default class OpenTabSettingsPlugin extends Plugin {
             this.addCommand({
                 id: "new-tab-" + kebabCase(p),
                 name: t(`commands.newTab.${p}`),
-                callback: async () => {
-                    const leaf = this.app.workspace.getLeaf(buildOverride('tab', {newTabPlacement: p}));
-                    this.app.workspace.setActiveLeaf(leaf);
-                },
+                callback: () => { this.createNewLeaf(true, {newTabPlacement: p, replaceEmptyTabs: false}); },
             })
         }
 
@@ -467,61 +464,59 @@ export default class OpenTabSettingsPlugin extends Plugin {
      * Custom variant of the internal workspace.createLeafInTabGroup function that follows our new tab placement logic.
      * @param focus Whether to focus the new tab. If undefined focus based on focusNewTab config
      */
-    private createNewLeaf(focus?: boolean, override: Partial<OpenTabSettingsPluginSettings> = {}) {
+    private createNewLeaf(focus?: boolean, override: Partial<OpenTabSettingsPluginSettings & {replaceEmptyTabs: boolean}> = {}) {
         const workspace = this.app.workspace;
         focus = focus ?? this.app.vault.getConfig('focusNewTab') as boolean;
-        const settings = {...this.settings, ...override};
+        const settings = {...this.settings, replaceEmptyTabs: true, ...override};
 
         const activeLeaf = workspace.getMostRecentLeaf();
         if (!activeLeaf) throw new Error("No tab group found.");
+        const root = activeLeaf.getRoot();
         const activeTabGroup = activeLeaf.parent;
-        const activeIndex = activeTabGroup.children.indexOf(activeLeaf);
         let group: TabGroup|undefined;
         let index: number|undefined;
 
-        if (settings.newTabTabGroupPlacement != "same" && !Platform.isPhone) {
-            const tabGroups = this.getAllTabGroups(activeLeaf.getRoot());
-            const otherTabGroup = tabGroups.filter(g => g !== activeTabGroup).at(-1);
-            if (settings.newTabTabGroupPlacement == "opposite" && otherTabGroup) {
-                group = otherTabGroup;
-            } else if (settings.newTabTabGroupPlacement == "first" && tabGroups.at(0)) {
-                group = tabGroups[0];
-            } else if (settings.newTabTabGroupPlacement == "last" && tabGroups.at(-1)) {
-                group = tabGroups.at(-1)!;
-            }
-        }
-        if (!group) {
+        if (settings.newTabTabGroupPlacement == "same" || Platform.isPhone) {
             group = activeTabGroup;
+        } else {
+            const tabGroups = this.getAllTabGroups(root);
+            if (settings.newTabTabGroupPlacement == "opposite") {
+                group = tabGroups.filter(g => g !== activeTabGroup).at(-1) ?? activeTabGroup;
+            } else if (settings.newTabTabGroupPlacement == "first") {
+                group = tabGroups.at(0) ?? activeTabGroup;
+            } else  { // if (settings.newTabTabGroupPlacement == "last") {
+                group = tabGroups.at(-1) ?? activeTabGroup;
+            }
         }
 
         if (group == activeTabGroup) {
             if (settings.newTabPlacement == "afterPinned") {
                 const lastPinnedIndex = group.children.findLastIndex(l => l.pinned);
-                index = lastPinnedIndex >= 0 ? lastPinnedIndex + 1 : activeIndex + 1;
+                index = lastPinnedIndex >= 0 ? lastPinnedIndex + 1 : group.currentTab + 1;
             } else if (settings.newTabPlacement == "beginning") {
                 index = 0;
             } else if (settings.newTabPlacement == "end") {
-                index = activeTabGroup.children.length;
-            } else {
-                index = activeIndex + 1;
+                index = group.children.length;
+            } else { // if (settings.newTabPlacement == "afterActive") {
+                index = group.currentTab + 1;
             }
         } else {
             if (settings.newTabPlacement == "beginning") {
                 index = 0
             } else {
-                index = activeTabGroup.children.length;
+                index = group.children.length;
             }
         }
 
         let newLeaf: WorkspaceLeaf|undefined;
 
         // This is default Obsidian behavior, if active leaf is empty new tab replaces it instead of making a new one.
-        if (isEmptyLeaf(activeLeaf) && activeLeaf.canNavigate()) {
+        if (settings.replaceEmptyTabs && isEmptyLeaf(activeLeaf) && activeLeaf.canNavigate()) {
             newLeaf = activeLeaf;
         }
 
         const leafToDisplace = group.children[Math.min(index, group.children.length - 1)];
-        if (!newLeaf && isEmptyLeaf(leafToDisplace) && leafToDisplace.canNavigate()) {
+        if (!newLeaf && settings.replaceEmptyTabs && isEmptyLeaf(leafToDisplace) && leafToDisplace.canNavigate()) {
             // we re-use empty tabs more aggressively than default Obsidian. If the tab at the new location is empty,
             // re-use it instead of creating a new one.
             newLeaf = leafToDisplace;
