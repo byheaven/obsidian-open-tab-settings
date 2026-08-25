@@ -70,4 +70,39 @@ describe('Misc', function() {
             [{type: "markdown", file: "B.md"}, {type: "markdown", file: "B.md"}]
         ]);
     })
+
+    it("new tab command afterActive", async function() {
+        await workspacePage.setSettings({openInNewTab: false});
+        await workspacePage.openFile("A.md");
+        await workspacePage.openFile("B.md");
+        await workspacePage.setActiveFile("A.md");
+
+        await browser.executeObsidianCommand("open-tab-settings:new-tab-after-active")
+        await workspacePage.matchWorkspace([
+            [{file: "A.md"}, {type: "empty", active: true}, {file: "B.md"}],
+        ]);
+    })
+
+    it("new tab command beginning", async function() {
+        await workspacePage.openFile("A.md");
+        await workspacePage.openFile("B.md");
+        await workspacePage.setActiveFile("A.md");
+
+        await browser.executeObsidianCommand("open-tab-settings:new-tab-beginning")
+        await workspacePage.matchWorkspace([
+            [{type: "empty", active: true}, {file: "A.md"}, {file: "B.md"}],
+        ]);
+    })
+
+    it("new tab command doesn't replace empty", async function() {
+        await workspacePage.openFile("A.md");
+        await workspacePage.openFile("B.md");
+        await workspacePage.setActiveFile("A.md");
+
+        await browser.executeObsidianCommand("open-tab-settings:new-tab-beginning")
+        await browser.executeObsidianCommand("open-tab-settings:new-tab-beginning")
+        await workspacePage.matchWorkspace([
+            [{type: "empty", active: true}, {type: "empty"}, {file: "A.md"}, {file: "B.md"}],
+        ]);
+    })
 })

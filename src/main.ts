@@ -127,10 +127,7 @@ export default class OpenTabSettingsPlugin extends Plugin {
             this.addCommand({
                 id: "new-tab-" + kebabCase(p),
                 name: t(`commands.newTab.${p}`),
-                callback: async () => {
-                    const leaf = this.app.workspace.getLeaf(buildOverride('tab', {newTabPlacement: p}));
-                    this.app.workspace.setActiveLeaf(leaf);
-                },
+                callback: () => { this.createNewLeaf(true, {newTabPlacement: p, replaceEmptyTabs: false}); },
             })
         }
 
@@ -467,10 +464,10 @@ export default class OpenTabSettingsPlugin extends Plugin {
      * Custom variant of the internal workspace.createLeafInTabGroup function that follows our new tab placement logic.
      * @param focus Whether to focus the new tab. If undefined focus based on focusNewTab config
      */
-    private createNewLeaf(focus?: boolean, override: Partial<OpenTabSettingsPluginSettings> = {}) {
+    private createNewLeaf(focus?: boolean, override: Partial<OpenTabSettingsPluginSettings & {replaceEmptyTabs: boolean}> = {}) {
         const workspace = this.app.workspace;
         focus = focus ?? this.app.vault.getConfig('focusNewTab') as boolean;
-        const settings = {...this.settings, ...override};
+        const settings = {...this.settings, replaceEmptyTabs: true, ...override};
 
         const activeLeaf = workspace.getMostRecentLeaf();
         if (!activeLeaf) throw new Error("No tab group found.");
@@ -514,12 +511,12 @@ export default class OpenTabSettingsPlugin extends Plugin {
         let newLeaf: WorkspaceLeaf|undefined;
 
         // This is default Obsidian behavior, if active leaf is empty new tab replaces it instead of making a new one.
-        if (isEmptyLeaf(activeLeaf) && activeLeaf.canNavigate()) {
+        if (settings.replaceEmptyTabs && isEmptyLeaf(activeLeaf) && activeLeaf.canNavigate()) {
             newLeaf = activeLeaf;
         }
 
         const leafToDisplace = group.children[Math.min(index, group.children.length - 1)];
-        if (!newLeaf && isEmptyLeaf(leafToDisplace) && leafToDisplace.canNavigate()) {
+        if (!newLeaf && settings.replaceEmptyTabs && isEmptyLeaf(leafToDisplace) && leafToDisplace.canNavigate()) {
             // we re-use empty tabs more aggressively than default Obsidian. If the tab at the new location is empty,
             // re-use it instead of creating a new one.
             newLeaf = leafToDisplace;
