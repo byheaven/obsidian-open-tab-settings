@@ -24,6 +24,19 @@ class WorkspacePage {
         }, settings);
     }
 
+    async setSettingsDefaults(settings: Partial<OpenTabSettingsPluginSettings>) {
+        const defaults: OpenTabSettingsPluginSettings = {
+            openInNewTab: true,
+            previewTabs: false,
+            deduplicateTabs: true,
+            deduplicateAcrossTabGroups: true,
+            newTabPlacement: "afterActive",
+            newTabTabGroupPlacement: "same",
+            modClickBehavior: "tab",
+        }
+        this.setSettings({...defaults, ...settings});
+    }
+
     async loadPlatformWorkspaceLayout(layout: string) {
         const platform = await obsidianPage.getPlatform();
         if (platform.isPhone) {

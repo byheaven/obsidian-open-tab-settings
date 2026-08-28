@@ -259,10 +259,7 @@ export default class OpenTabSettingsPlugin extends Plugin {
                     const settings = {...plugin.settings, ...override};
 
                     let matches = plugin.findMatchingLeaves(file);
-                    if (!settings.deduplicateAcrossTabGroups) {
-                        matches = matches.filter(l => l.parent == this.parent);
-                    }
-
+  
                     // if leaf is new and was opened via an explicit open in new window, split, or "allow duplicate",
                     // don't deduplicate. Note that opening in new window doesn't call getLeaf (it calls openPopoutLeaf
                     // directly) so we assume undefined openType is a new window. getLeaf("same") will update openType,
@@ -284,6 +281,9 @@ export default class OpenTabSettingsPlugin extends Plugin {
                     // if the link opened was an internal link, always deduplicate to undo open in new tab.
                     if (!target && isInternalLink && !isSpecialOpen) {
                         target = matches.find(l => l.id == openedFrom)!;
+                    }
+                    if (!settings.deduplicateAcrossTabGroups) {
+                        matches = matches.filter(l => l.parent == this.parent);
                     }
                     // choose matches first from last opened from, then matches in same group, then first in list.
                     if (settings.deduplicateTabs && !isSpecialOpen && matches.length > 0) {
