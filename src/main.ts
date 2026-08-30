@@ -29,7 +29,9 @@ function isEmptyLeaf(leaf: WorkspaceLeaf) {
 /** Check if leaf is in the main area (e.g. not in sidebar etc) */
 function isMainLeaf(leaf: WorkspaceLeaf) {
     const root = leaf.getRoot();
-    return (root instanceof WorkspaceRoot || root instanceof WorkspaceFloating);
+    // parent can be null on detached leaves. Obsidian never calls openFile on a detached leaf, but some plugins seem to
+    // see issue #80
+    return (root instanceof WorkspaceRoot || root instanceof WorkspaceFloating) && leaf.parent;
 }
 
 /**
@@ -259,10 +261,7 @@ export default class OpenTabSettingsPlugin extends Plugin {
                     const settings = {...plugin.settings, ...override};
 
                     let matches = plugin.findMatchingLeaves(file);
-                    if (!settings.deduplicateAcrossTabGroups) {
-                        matches = matches.filter(l => l.parent == this.parent);
-                    }
-
+  
                     // if leaf is new and was opened via an explicit open in new window, split, or "allow duplicate",
                     // don't deduplicate. Note that opening in new window doesn't call getLeaf (it calls openPopoutLeaf
                     // directly) so we assume undefined openType is a new window. getLeaf("same") will update openType,
@@ -284,6 +283,9 @@ export default class OpenTabSettingsPlugin extends Plugin {
                     // if the link opened was an internal link, always deduplicate to undo open in new tab.
                     if (!target && isInternalLink && !isSpecialOpen) {
                         target = matches.find(l => l.id == openedFrom)!;
+                    }
+                    if (!settings.deduplicateAcrossTabGroups) {
+                        matches = matches.filter(l => l.parent == this.parent);
                     }
                     // choose matches first from last opened from, then matches in same group, then first in list.
                     if (settings.deduplicateTabs && !isSpecialOpen && matches.length > 0) {
@@ -320,8 +322,9 @@ export default class OpenTabSettingsPlugin extends Plugin {
 
                     // If the leaf is still empty, close it. This can happen if the file was de-duplicated while
                     // "openInNewTab" is enabled, or if you open a file "in default app" in a new tab.
-                    if (isEmptyLeaf(this) && this.parent.children.length > 1) {
-                        const tabGroup = this.parent;
+                    if (isEmptyLeaf(this) && isMainLeaf(this) && this.parent.children.length > 1) {
+                        // WorkspaceMobileDrawer is the "sidebar" on mobile, so isMainLeaf avoids it
+                        const tabGroup = this.parent as TabGroup;
                         const wasCurrentTab = tabGroup.children[tabGroup.currentTab] === this;
                         const lastActiveTab = tabGroup.children
                             .filter(l => l !== this)
@@ -421,13 +424,13 @@ export default class OpenTabSettingsPlugin extends Plugin {
     }
 
     /**
-     * Gets all tab groups.
+     * Gets all tab groups under the given root. Excludes the sidebars (only works for main area and floating windows)
      */
     private getAllTabGroups(root: WorkspaceItem): TabGroup[] {
         const tabGroups: Set<TabGroup> = new Set(); // sets are ordered
         this.app.workspace.iterateAllLeaves(leaf => {
             if (leaf.getRoot() == root) {
-                tabGroups.add(leaf.parent);
+                tabGroups.add(leaf.parent as TabGroup);
             }
         });
         return [...tabGroups];
@@ -453,7 +456,7 @@ export default class OpenTabSettingsPlugin extends Plugin {
             }
             // one preview tab per tab group (this shouldn't trigger under normal circumstances, but with empty tabs
             // there's a few edge cases where createNewLeaf might end up creating 2 preview tabs in a group)
-            leaf.parent.children.filter(l => l !== leaf).forEach(l => this.setLeafIsPreview(l, false));
+            (leaf.parent as TabGroup).children.filter(l => l !== leaf).forEach(l => this.setLeafIsPreview(l, false));
         } else if (leaf.openTabSettings.eventCleanup) {
             leaf.openTabSettings.eventCleanup();
             delete leaf.openTabSettings?.eventCleanup;
@@ -469,10 +472,10 @@ export default class OpenTabSettingsPlugin extends Plugin {
         focus = focus ?? this.app.vault.getConfig('focusNewTab') as boolean;
         const settings = {...this.settings, replaceEmptyTabs: true, ...override};
 
-        const activeLeaf = workspace.getMostRecentLeaf();
+        const activeLeaf = workspace.getMostRecentLeaf(); // will be in main area or floating window
         if (!activeLeaf) throw new Error("No tab group found.");
         const root = activeLeaf.getRoot();
-        const activeTabGroup = activeLeaf.parent;
+        const activeTabGroup = activeLeaf.parent as TabGroup;
         let group: TabGroup|undefined;
         let index: number|undefined;
 
@@ -564,7 +567,7 @@ export default class OpenTabSettingsPlugin extends Plugin {
         let leaf: WorkspaceLeaf|null = null;
         workspace.iterateLeaves(container, (l) => {
           if (l.canNavigate()) {
-            const group = l.parent;
+            const group = l.parent as TabGroup;
             if (
                 group &&
                 (group.children[group.currentTab] === l || (group instanceof WorkspaceTabs && group.isStacked)) &&

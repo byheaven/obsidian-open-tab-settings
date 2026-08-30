@@ -2,7 +2,7 @@ import { Key, ChainablePromiseElement } from 'webdriverio'
 import { ConfigItem } from 'obsidian-typings'
 import type { OpenTabSettingsPluginSettings } from "src/settings.js"
 import { equals } from "@jest/expect-utils";
-import { WorkspaceLeaf, WorkspaceParent } from 'obsidian';
+import { WorkspaceTabs, WorkspaceLeaf, WorkspaceParent } from 'obsidian';
 import { obsidianPage } from 'wdio-obsidian-service';
 
 type LeafInfo = {
@@ -22,6 +22,19 @@ class WorkspacePage {
         await browser.executeObsidian(async ({plugins}, settings) => {
             await plugins.openTabSettings.updateSettings(settings);
         }, settings);
+    }
+
+    async setSettingsDefaults(settings: Partial<OpenTabSettingsPluginSettings>) {
+        const defaults: OpenTabSettingsPluginSettings = {
+            openInNewTab: true,
+            previewTabs: false,
+            deduplicateTabs: true,
+            deduplicateAcrossTabGroups: true,
+            newTabPlacement: "afterActive",
+            newTabTabGroupPlacement: "same",
+            modClickBehavior: "tab",
+        }
+        this.setSettings({...defaults, ...settings});
     }
 
     async loadPlatformWorkspaceLayout(layout: string) {
@@ -85,7 +98,7 @@ class WorkspacePage {
                         file: (leaf.getViewState()?.state?.file ?? "") as string,
                         deferred: leaf.isDeferred, pinned: leaf.pinned,
                         active: activeLeaf == leaf,
-                        currentTab: leaf.parent.children.indexOf(leaf) === leaf.parent.currentTab,
+                        currentTab: leaf.parent.children.indexOf(leaf) === (leaf.parent as WorkspaceTabs).currentTab,
                         isPreview: leaf.openTabSettings?.isPreview ?? false,
                     };
                 })

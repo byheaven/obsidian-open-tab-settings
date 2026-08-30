@@ -1,4 +1,4 @@
-import { PaneType, WorkspaceTabs, WorkspaceMobileDrawer, WorkspaceItem } from 'obsidian';
+import { PaneType, WorkspaceLeaf, WorkspaceTabs } from 'obsidian';
 import { OpenTabSettingsPluginSettings } from './settings';
 
 declare module "obsidian" {
@@ -13,27 +13,7 @@ declare module "obsidian" {
             isPreview?: boolean,
             eventCleanup?: () => void,
         },
-        pinned: boolean,
-    }
-
-    interface WorkspaceParent {
-        removeChild(leaf: WorkspaceLeaf): void,
-        insertChild(index: number, leaf: WorkspaceLeaf): void,
-        selectTabIndex(index: number): void,
-        children: WorkspaceItem[],
-        currentTab: number,
-        isStacked: boolean,
-    }
-
-    interface WorkspaceTabs {
-        children: WorkspaceLeaf[],
-    }
-
-    interface WorkspaceMobileDrawer {
-        children: WorkspaceLeaf[],
-        currentTab: number,
-        isStacked: boolean,
     }
 }
 
-type TabGroup = WorkspaceTabs|WorkspaceMobileDrawer;
+export type TabGroup = Omit<WorkspaceTabs, 'children'> & {children: WorkspaceLeaf[]};

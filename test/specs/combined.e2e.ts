@@ -4,7 +4,7 @@ import { obsidianPage } from 'wdio-obsidian-service';
 describe('Test basic deduplicate', function() {
     beforeEach(async function() {
         await workspacePage.loadPlatformWorkspaceLayout("empty");
-        await workspacePage.setSettings({ openInNewTab: true, deduplicateTabs: true });
+        await workspacePage.setSettingsDefaults({openInNewTab: true, deduplicateTabs: true});
         await workspacePage.setConfig('focusNewTab', true);
     });
 
@@ -55,7 +55,6 @@ describe('Test basic deduplicate', function() {
     })
 
     it('internal link with multiple duplicates', async function() {
-        await workspacePage.setSettings({ openInNewTab: true, deduplicateTabs: true });
         await workspacePage.openFile("Loop.md");
         await workspacePage.openFile("Loop.md");
         const [loop1, loop2] = (await workspacePage.getAllLeaves())[0];
@@ -72,5 +71,19 @@ describe('Test basic deduplicate', function() {
             {type: "markdown", file: "Loop.md", id: loop1.id},
             {type: "markdown", file: "Loop.md", id: loop2.id, active: true},
         ]]);
+    })
+
+    it('internal link cross tab groups', async function() {
+        if ((await obsidianPage.getPlatform()).isMobile) this.skip();
+
+        await workspacePage.setSettings({deduplicateAcrossTabGroups: false,  newTabTabGroupPlacement: "opposite"});
+        await workspacePage.openFile("Loop.md");
+        await workspacePage.openLinkToRight(await workspacePage.getLink("B"));
+        await workspacePage.setActiveFile("Loop.md");
+        await workspacePage.matchWorkspace([[{file: "Loop.md", active: true}], [{file: "B.md"}]]);
+        await workspacePage.openLink(await workspacePage.getLink("Loop.md#Subheading"));
+
+        // internal link should stay internal
+        await workspacePage.matchWorkspace([[{file: "Loop.md", active: true}], [{file: "B.md"}]]);
     })
 })

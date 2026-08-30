@@ -27,7 +27,7 @@
       "@wdio/globals/types",
       "@wdio/mocha-framework",
       "wdio-obsidian-service",
-      "obsidian-typings"
+      "@obsidian-typings/obsidian-public-latest"
     ],
     "skipLibCheck": true
   },
