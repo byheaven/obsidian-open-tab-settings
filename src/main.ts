@@ -29,7 +29,9 @@ function isEmptyLeaf(leaf: WorkspaceLeaf) {
 /** Check if leaf is in the main area (e.g. not in sidebar etc) */
 function isMainLeaf(leaf: WorkspaceLeaf) {
     const root = leaf.getRoot();
-    return (root instanceof WorkspaceRoot || root instanceof WorkspaceFloating);
+    // parent can be null on detached leaves. Obsidian never calls openFile on a detached leaf, but some plugins seem to
+    // see issue #80
+    return (root instanceof WorkspaceRoot || root instanceof WorkspaceFloating) && leaf.parent;
 }
 
 /**
@@ -320,7 +322,7 @@ export default class OpenTabSettingsPlugin extends Plugin {
 
                     // If the leaf is still empty, close it. This can happen if the file was de-duplicated while
                     // "openInNewTab" is enabled, or if you open a file "in default app" in a new tab.
-                    if (isEmptyLeaf(this) && this.parent.children.length > 1 && isMainLeaf(this)) {
+                    if (isEmptyLeaf(this) && isMainLeaf(this) && this.parent.children.length > 1) {
                         // WorkspaceMobileDrawer is the "sidebar" on mobile, so isMainLeaf avoids it
                         const tabGroup = this.parent as TabGroup;
                         const wasCurrentTab = tabGroup.children[tabGroup.currentTab] === this;

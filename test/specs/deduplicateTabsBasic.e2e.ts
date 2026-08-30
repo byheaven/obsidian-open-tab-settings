@@ -189,4 +189,49 @@ describe('Test basic deduplicate', function() {
             {type: "markdown", file: "B.md", active: true}, {type: "markdown", file: "A.md"},
         ]]);
     })
+
+
+    // // These can't happen anywhere I can find in Obsidian itself, but some plugin combinations can trigger sequences
+    // // like these (see #80)
+
+    it('race 1', async function () {
+        await workspacePage.openFile("A.md");
+
+        await browser.executeObsidian( async ({app}) => {
+            const l = app.workspace.getLeaf('tab');
+            const file = app.vault.getFileByPath("A.md")!;
+            await Promise.all([l.openFile(file), l.openFile(file)]);
+        });
+
+        await workspacePage.matchWorkspace([[{file: "A.md", active: true}]]);
+    })
+
+    it('race 2', async function () {
+        await workspacePage.setSettings({deduplicateTabs: false})
+        await workspacePage.openFile("A.md");
+
+        await browser.executeObsidian( async ({app}) => {
+            const l = app.workspace.getLeaf('tab');
+            const file = app.vault.getFileByPath("A.md")!;
+            await Promise.all([l.openFile(file), l.openFile(file)]);
+        });
+
+        await workspacePage.matchWorkspace([[{file: "A.md", active: true}, {file: "A.md"}]]);
+    })
+
+    it('detached leaf', async function() {
+        await workspacePage.openFile("A.md");
+        await browser.executeObsidianCommand("workspace:new-tab");
+        await workspacePage.matchWorkspace([[{file: "A.md"}, {type: "empty", active: true}]]);
+
+        await browser.executeObsidian( async ({app, obsidian}) => {
+            const leaf = app.workspace.getActiveViewOfType(obsidian.View)!.leaf;
+            const tabGroup = leaf.parent;
+            leaf.detach();
+            await leaf.openFile(app.vault.getFileByPath("B.md")!);
+            tabGroup.insertChild(0, leaf);
+        });
+
+        await workspacePage.matchWorkspace([[{file: "B.md"}, {file: "A.md", active: true}]]);
+    })
 })
