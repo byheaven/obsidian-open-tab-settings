@@ -35,4 +35,4 @@ and [WebdriverIO](https://webdriver.io/). Run them with:
 npm run test
 ```
 
-If you'd like to help with translating, add just a new locale file under `src/locales`.
+If you'd like to help with translating, just add a new locale file under `src/locales`.
